@@ -471,27 +471,6 @@ if st.session_state.current_profile:
     
     st.markdown(f'<div class="profile-output"><div class="profile-text">{st.session_state.current_profile}</div></div>', unsafe_allow_html=True)
     
-    st.markdown("### Edit Profile (Optional)")
-    st.info("You can directly edit the profile text below before copying it")
-    
-    edited_profile = st.text_area(
-        "Edit Profile",
-        value=st.session_state.current_profile,
-        height=300,
-        key="edit_profile",
-        label_visibility="collapsed"
-    )
-    
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        if st.button("💾 Save Edits", key="save_edits"):
-            st.session_state.current_profile = edited_profile
-            st.success("Profile updated!")
-            st.rerun()
-    
-    with st.expander("📋 Copy Profile Text"):
-        st.code(st.session_state.current_profile, language=None)
-    
     st.markdown("### Refine the Profile")
     st.info("Be specific about what you want to change - you can refine as many times as needed")
     
