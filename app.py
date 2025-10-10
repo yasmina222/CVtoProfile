@@ -33,7 +33,7 @@ def load_logo():
 logo_base64 = load_logo()
 
 # ================================
-# PROTOCOL EDUCATION DESIGN
+# STUNNING PROTOCOL EDUCATION DESIGN
 # ================================
 st.markdown(f"""
     <style>
@@ -534,14 +534,21 @@ if st.session_state.current_profile:
     
     if len(st.session_state.history) > 1:
         st.markdown("---")
-        with st.expander(f"Version History ({len(st.session_state.history)} versions)"):
-            for version in reversed(st.session_state.history):
-                st.markdown(f"**Version {version['version']}** — {version['type']} at {version['timestamp']}")
+        st.markdown("### Version History")
+        st.info(f"You have {len(st.session_state.history)} versions saved. Click on any version to view and edit it.")
+        
+        for idx, version in enumerate(reversed(st.session_state.history)):
+            with st.expander(f"📄 Version {version['version']} — {version['type']} at {version['timestamp']}", expanded=False):
                 if version['type'] == "Refinement":
-                    st.markdown(f"*Request: {version['request']}*")
-                st.text_area("Version Content", value=version['content'], height=150, disabled=False, key=f"h_{version['version']}", label_visibility="collapsed")
-                if version != list(reversed(st.session_state.history))[-1]:
-                    st.markdown("---")
+                    st.markdown(f"**Refinement Request:** *{version['request']}*")
+                
+                st.text_area(
+                    f"Version {version['version']} Content",
+                    value=version['content'],
+                    height=400,
+                    key=f"history_v{version['version']}_{idx}",
+                    label_visibility="collapsed"
+                )
 
 st.markdown('</div>', unsafe_allow_html=True)
 
