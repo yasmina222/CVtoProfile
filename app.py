@@ -7,8 +7,8 @@ from pathlib import Path
 # ================================
 # API CREDENTIALS
 # ================================
-API_KEY = "cK6gXtu2fEVFZmDbhuZUUrYgMSFoEi1vFXwsvaE7h30C35WZt63QJQQJ99BIACmepeSXJ3w3AAAAACOGZxX7"
-FULL_API_URL = "https://cvprofilefoundry-test.cognitiveservices.azure.com/openai/deployments/gpt-4o-2024-08-06-CVProfiler-v1-3/chat/completions?api-version=2025-01-01-preview"
+API_KEY = st.secrets["API_KEY"]
+FULL_API_URL = st.secrets["FULL_API_URL"]
 
 # ================================
 # PAGE CONFIGURATION
@@ -550,4 +550,5 @@ st.markdown("""
         <div class="footer-title">Protocol Education CV Profile Generator</div>
         <div>Powered by Azure OpenAI Fine-Tuned GPT-4o | Secure & Confidential</div>
     </div>
+
 """, unsafe_allow_html=True)
