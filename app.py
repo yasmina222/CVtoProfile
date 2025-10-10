@@ -7,8 +7,8 @@ from pathlib import Path
 # ================================
 # API CREDENTIALS
 # ================================
-API_KEY = st.secrets["API_KEY"]
-FULL_API_URL = st.secrets["FULL_API_URL"]
+API_KEY = "cK6gXtu2fEVFZmDbhuZUUrYgMSFoEi1vFXwsvaE7h30C35WZt63QJQQJ99BIACmepeSXJ3w3AAAAACOGZxX7"
+FULL_API_URL = "https://cvprofilefoundry-test.cognitiveservices.azure.com/openai/deployments/gpt-4o-2024-08-06-CVProfiler-v1-3/chat/completions?api-version=2025-01-01-preview"
 
 # ================================
 # PAGE CONFIGURATION
@@ -33,7 +33,7 @@ def load_logo():
 logo_base64 = load_logo()
 
 # ================================
-# STUNNING PROTOCOL EDUCATION DESIGN
+# PROTOCOL EDUCATION DESIGN
 # ================================
 st.markdown(f"""
     <style>
@@ -471,8 +471,26 @@ if st.session_state.current_profile:
     
     st.markdown(f'<div class="profile-output"><div class="profile-text">{st.session_state.current_profile}</div></div>', unsafe_allow_html=True)
     
-    with st.expander("View copyable text"):
-        st.text_area("Profile Text", value=st.session_state.current_profile, height=200, label_visibility="collapsed")
+    st.markdown("### Edit Profile (Optional)")
+    st.info("You can directly edit the profile text below before copying it")
+    
+    edited_profile = st.text_area(
+        "Edit Profile",
+        value=st.session_state.current_profile,
+        height=300,
+        key="edit_profile",
+        label_visibility="collapsed"
+    )
+    
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        if st.button("💾 Save Edits", key="save_edits"):
+            st.session_state.current_profile = edited_profile
+            st.success("Profile updated!")
+            st.rerun()
+    
+    with st.expander("📋 Copy Profile Text"):
+        st.code(st.session_state.current_profile, language=None)
     
     st.markdown("### Refine the Profile")
     st.info("Be specific about what you want to change - you can refine as many times as needed")
@@ -521,7 +539,7 @@ if st.session_state.current_profile:
                 st.markdown(f"**Version {version['version']}** — {version['type']} at {version['timestamp']}")
                 if version['type'] == "Refinement":
                     st.markdown(f"*Request: {version['request']}*")
-                st.text_area("Version Content", value=version['content'], height=150, disabled=True, key=f"h_{version['version']}", label_visibility="collapsed")
+                st.text_area("Version Content", value=version['content'], height=150, disabled=False, key=f"h_{version['version']}", label_visibility="collapsed")
                 if version != list(reversed(st.session_state.history))[-1]:
                     st.markdown("---")
 
@@ -550,5 +568,4 @@ st.markdown("""
         <div class="footer-title">Protocol Education CV Profile Generator</div>
         <div>Powered by Azure OpenAI Fine-Tuned GPT-4o | Secure & Confidential</div>
     </div>
-
 """, unsafe_allow_html=True)
