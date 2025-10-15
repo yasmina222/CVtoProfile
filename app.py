@@ -4,24 +4,46 @@ from datetime import datetime
 import base64
 from pathlib import Path
 
-# ================================
-# API CREDENTIALS
-# ================================
-API_KEY = "cK6gXtu2fEVFZmDbhuZUUrYgMSFoEi1vFXwsvaE7h30C35WZt63QJQQJ99BIACmepeSXJ3w3AAAAACOGZxX7"
+
+# API
+
+import os
+
+API_KEY = os.getenv("AZURE_API_KEY")
 FULL_API_URL = "https://cvprofilefoundry-test.cognitiveservices.azure.com/openai/deployments/gpt-4o-2024-08-06-CVProfiler-v1-3/chat/completions?api-version=2025-01-01-preview"
 
-# ================================
+# SYSTEM PROMPT FOR FINE-TUNED MODEL
+SYSTEM_PROMPT = """You are a Protocol Education recruitment specialist creating educator profiles. You have been trained on gold-standard CV-profile pairs.
+
+When interview notes are provided alongside the CV, integrate both sources to create a compelling profile:
+
+Use INTERVIEW NOTES for:
+- Personality traits and teaching style
+- Recent roles and current situation
+- Specific examples and achievements
+- What makes this educator stand out and appeal to schools
+
+Use CV for:
+- Formal qualifications and employment history
+- Complete timeline and background context
+- Verifiable facts and certifications
+
+Blend both sources naturally to create a profile that shows competence AND personality. When interview notes mention recent information that differs from the CV, prioritize the interview insights as they are more current.
+
+If only a CV is provided, create the profile as normal using your training."""
+
+
 # PAGE CONFIGURATION
-# ================================
+
 st.set_page_config(
     page_title="Protocol Education - CV Profile Generator",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# ================================
+
 # LOAD LOGO
-# ================================
+
 def load_logo():
     logo_path = Path("logo.webp")
     if logo_path.exists():
@@ -32,9 +54,8 @@ def load_logo():
 
 logo_base64 = load_logo()
 
-# ================================
-# STUNNING PROTOCOL EDUCATION DESIGN
-# ================================
+# WEBSITE DESIGN
+
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -354,9 +375,9 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# ================================
-# INITIALIZE SESSION STATE
-# ================================
+
+# INITIALISE SESSION STATE
+
 if "current_profile" not in st.session_state:
     st.session_state.current_profile = ""
 if "iteration_count" not in st.session_state:
@@ -364,9 +385,9 @@ if "iteration_count" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# ================================
+
 # API FUNCTION
-# ================================
+
 def call_fine_tuned_model(messages):
     headers = {"api-key": API_KEY, "Content-Type": "application/json"}
     payload = {"messages": messages, "temperature": 0.7, "max_tokens": 2000}
@@ -380,9 +401,8 @@ def call_fine_tuned_model(messages):
     except Exception as e:
         return f"Error: {str(e)}"
 
-# ================================
 # NAVIGATION
-# ================================
+
 if logo_base64:
     st.markdown(f"""
         <div class="nav-bar">
@@ -392,9 +412,9 @@ if logo_base64:
 else:
     st.markdown('<div class="nav-bar"><div style="color:#ffffff; font-size:1.5rem; font-weight:700;">Protocol Education</div></div>', unsafe_allow_html=True)
 
-# ================================
+
 # HERO SECTION
-# ================================
+
 st.markdown("""
     <div class="hero">
         <div class="hero-content">
@@ -404,9 +424,9 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# ================================
+
 # MAIN CONTENT
-# ================================
+
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
 # STEP 1
@@ -417,7 +437,7 @@ cv_text = st.text_area(
     "CV Input",
     height=280,
     max_chars=20000,
-    placeholder="Paste your complete CV here",
+    placeholder="Paste your your CV first and then your interview notes",
     key="cv_input",
     label_visibility="collapsed"
 )
@@ -440,7 +460,7 @@ if generate_button:
     else:
         with st.spinner("Analyzing CV and generating profile..."):
             messages = [
-                {"role": "system", "content": "You are Protocol Education's recruitment specialist. Transform CVs into engaging educator profiles in the 'Meet [Name]' format."},
+                {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Create an educator profile from this CV:\n\n{cv_text}"}
             ]
             
@@ -471,8 +491,12 @@ if st.session_state.current_profile:
     
     st.markdown(f'<div class="profile-output"><div class="profile-text">{st.session_state.current_profile}</div></div>', unsafe_allow_html=True)
     
+    with st.expander("View copyable text"):
+        st.text_area("Profile Text", value=st.session_state.current_profile, height=200, label_visibility="collapsed")
+    
     st.markdown("### Refine the Profile")
     st.info("Be specific about what you want to change - you can refine as many times as needed")
+
     
     refinement_request = st.text_area(
         "Refinement Request",
@@ -490,7 +514,7 @@ if st.session_state.current_profile:
         else:
             with st.spinner("Refining profile..."):
                 messages = [
-                    {"role": "system", "content": "You are Protocol Education's recruitment specialist. Refine educator profiles based on feedback."},
+                    {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": f"Current profile:\n\n{st.session_state.current_profile}\n\nRefinement: {refinement_request}"}
                 ]
                 
@@ -513,21 +537,14 @@ if st.session_state.current_profile:
     
     if len(st.session_state.history) > 1:
         st.markdown("---")
-        st.markdown("### Version History")
-        st.info(f"You have {len(st.session_state.history)} versions saved. Click on any version to view and edit it.")
-        
-        for idx, version in enumerate(reversed(st.session_state.history)):
-            with st.expander(f"📄 Version {version['version']} — {version['type']} at {version['timestamp']}", expanded=False):
+        with st.expander(f"Version History ({len(st.session_state.history)} versions)"):
+            for version in reversed(st.session_state.history):
+                st.markdown(f"**Version {version['version']}** — {version['type']} at {version['timestamp']}")
                 if version['type'] == "Refinement":
-                    st.markdown(f"**Refinement Request:** *{version['request']}*")
-                
-                st.text_area(
-                    f"Version {version['version']} Content",
-                    value=version['content'],
-                    height=400,
-                    key=f"history_v{version['version']}_{idx}",
-                    label_visibility="collapsed"
-                )
+                    st.markdown(f"*Request: {version['request']}*")
+                st.text_area("Version Content", value=version['content'], height=150, disabled=True, key=f"h_{version['version']}", label_visibility="collapsed")
+                if version != list(reversed(st.session_state.history))[-1]:
+                    st.markdown("---")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -552,6 +569,6 @@ with st.sidebar:
 st.markdown("""
     <div class="footer">
         <div class="footer-title">Protocol Education CV Profile Generator</div>
-        <div>Powered by Azure OpenAI Fine-Tuned GPT-4o | Secure & Confidential</div>
+        <div>Powered by Azure Fine-Tuned GPT-4o | Secure & Confidential</div>
     </div>
 """, unsafe_allow_html=True)
