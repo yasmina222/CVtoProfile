@@ -431,7 +431,7 @@ st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
 # STEP 1
 st.markdown('<div class="step-badge">STEP 1</div>', unsafe_allow_html=True)
-st.markdown("## Paste CV Content")
+st.markdown("## Paste CV and Interview Content")
 
 cv_text = st.text_area(
     "CV Input",
@@ -572,3 +572,4 @@ st.markdown("""
         <div>Powered by Azure Fine-Tuned GPT-4o | Secure & Confidential</div>
     </div>
 """, unsafe_allow_html=True)
+
